@@ -3,8 +3,7 @@
 ![Python](https://img.shields.io/badge/Python-3.9+-blue?logo=python)
 ![Status](https://img.shields.io/badge/Status-In%20Progress-yellow)
 
-# Air Quality Data Pipeline - Ontario
-
+# Air Quality Data Pipeline - Canada
 Real-time air quality monitoring pipeline for Ontario using OpenAQ API, Databricks Unity Catalog, and AWS S3.
 
 ## Architecture
