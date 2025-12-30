@@ -20,9 +20,8 @@ flowchart LR
             J2[Measurements Ingestion]
         end
         subgraph Notebooks[Python Notebooks]
-            N1[Bronze Layer]
-            N2[Silver Layer]
-            N3[Gold Layer]
+            N1[Bronze → Silver]
+            N2[Silver → Gold]
         end
         UC[Unity Catalog]
     end
@@ -36,10 +35,12 @@ flowchart LR
     end
     
     API --> Jobs
-    Jobs --> Notebooks
-    Notebooks --> S3
+    Jobs --> B
+    N1 --> Si
+    N2 --> G
     B --> Si --> G
     UC -.->|Governance| S3
+
 ```
 
 ## Data Architecture - Medallion
