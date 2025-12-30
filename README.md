@@ -9,7 +9,7 @@ Real-time air quality monitoring pipeline for Canada using OpenAQ API, Databrick
 
 ## Architecture
 ```mermaid
-flowchart TB
+flowchart LR
     subgraph Source
         API[OpenAQ API]
     end
