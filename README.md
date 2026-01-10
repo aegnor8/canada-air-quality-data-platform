@@ -1,4 +1,4 @@
-# Canada Air Quality Pipeline
+# Canada Air Quality Data Platform
 
 Real-time air quality monitoring pipeline using Databricks, Delta Lake, and AWS S3.
 
