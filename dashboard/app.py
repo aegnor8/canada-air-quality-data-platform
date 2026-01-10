@@ -133,17 +133,6 @@ def render_map(df, units):
     fig.update_layout(height=MAP_CONFIG["height"], coloraxis_colorbar=dict(title=units))
     st.plotly_chart(fig, use_container_width=True)
 
-def render_table(df):
-    display_df = df[["location_name", "locality", "value", "time_window", "datetime_utc", "parameter_units"]].rename(columns={
-        "location_name": "Location",
-        "locality": "City",
-        "value": "Value",
-        "time_window": "Time Window",
-        "datetime_utc": "Measurement Time",
-        "parameter_units": "Units"
-    }).sort_values("Value", ascending=False)
-    st.dataframe(display_df, use_container_width=True, hide_index=True)
-
 
 # MAIN APP
 
@@ -175,15 +164,12 @@ def main():
         # Summary
         st.markdown(f"**Date**: {selected_date} | **Stations**: {df['location_name'].nunique()} | **Readings**: {len(df)}")
         
-        # Render components
+        # Render Statistics
         render_metrics(df, units)
-        
-        st.subheader("Air Quality by Time of Day")
-        st.caption("Use the slider below the map to navigate through time windows, or press Play to animate.")
+
+        # Render Map
         render_map(df, units)
         
-        st.subheader("Data Table")
-        render_table(df)
         
     except Exception as e:
         st.error(f"Error: {str(e)}")
