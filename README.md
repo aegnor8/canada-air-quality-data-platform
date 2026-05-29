@@ -6,10 +6,6 @@ Real-time air quality monitoring pipeline using Databricks, Delta Lake, and AWS 
 [![AWS](https://img.shields.io/badge/AWS-S3-orange?logo=amazon-aws)](https://aws.amazon.com)
 [![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B?logo=streamlit)](https://streamlit.io)
 
-## Live Demo
-
-🔗 **[Dashboard](https://databricks-airquality.streamlit.app/)** — Interactive map showing air quality across Canada
-
 ## Overview
 
 End-to-end ELT pipeline that ingests air quality data from 480+ Canadian monitoring stations, transforms it through a medallion architecture (Bronze → Silver → Gold), and serves it via an interactive dashboard.
