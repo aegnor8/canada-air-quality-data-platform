@@ -4,17 +4,17 @@ Real-time air quality monitoring pipeline using Databricks, Delta Lake, and AWS 
 
 [![Databricks](https://img.shields.io/badge/Databricks-Unity%20Catalog-red?logo=databricks)](https://databricks.com)
 [![AWS](https://img.shields.io/badge/AWS-S3-orange?logo=amazon-aws)](https://aws.amazon.com)
-[![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B?logo=streamlit)](https://streamlit.io)
 
 ## Overview
 
-End-to-end ELT pipeline that ingests air quality data from 480+ Canadian monitoring stations, transforms it through a medallion architecture (Bronze → Silver → Gold), and serves it via an interactive dashboard.
+End-to-end ELT pipeline that ingests air quality data from 480+ Canadian monitoring stations (1,400+ sensors), transforms it through a medallion architecture (Bronze → Silver → Gold), and serves it via an interactive Looker Studio dashboard.
 
 **Key Features:**
 - Hourly data ingestion from OpenAQ API
 - Star schema for analytics (fact + dimensions)
 - Incremental loads with MERGE (no duplicates, full history)
-- Interactive Streamlit dashboard with animated time series
+- Sensor health monitoring mart (down detection, flatlines, coverage)
+- Interactive Looker Studio dashboard powered by the Gold layer
 
 ## Architecture
 ```mermaid
@@ -23,11 +23,13 @@ flowchart LR
     subgraph Databricks
         Bronze[(Bronze)] --> Silver[(Silver)] --> Gold[(Gold)]
     end
-    Gold --> Dashboard[Streamlit]
+    Gold --> Dashboard[Looker Studio]
     Databricks --> S3[(AWS S3)]
 ```
 
 ## Data Model
+
+### Star Schema
 ```mermaid
 erDiagram
     fact_measurements ||--o{ dim_locations : location_id
@@ -68,8 +70,28 @@ erDiagram
         int year
         int month
         int day
+        int day_of_week
+        string day_name
+        int week_of_year
+        int quarter
     }
 ```
+
+### Sensor Health Marts
+
+Two flat tables, separate from the star schema, dedicated to monitoring the sensor fleet:
+
+| Table | Grain | Purpose |
+|-------|-------|---------|
+| `gold.sensor_health` | One row per sensor | Current status, a `needs_maintenance` flag and a human-readable reason: a technician's work list |
+| `gold.sensor_health_daily` | One row per sensor per day | Status history for trend charts (e.g. sensors down over time) |
+
+A sensor is evaluated on three independent signals:
+- **Silence**: hours since the last reading (`STALE` after 24h, `DOWN` after 72h, `NEVER_REPORTED` if no data at all)
+- **Flatline**: the same value repeated over and over (stuck instrument)
+- **Coverage**: days with at least one reading in the last 7
+
+All time windows are anchored to the newest timestamp in the data (event time), so results depend on the data itself rather than on when the job runs.
 
 ## Tech Stack
 
@@ -80,7 +102,7 @@ erDiagram
 | Processing | Databricks, Spark SQL |
 | Orchestration | Databricks Workflows |
 | Governance | Unity Catalog |
-| Visualization | Streamlit, Plotly |
+| Visualization | Looker Studio |
 
 ## Project Structure
 ```
@@ -89,34 +111,10 @@ erDiagram
 │   ├── 01_bronze_locations_ingestion.ipynb
 │   ├── 02_bronze_measurements_ingestion.ipynb
 │   ├── 03_silver_transformations.ipynb
-│   └── 04_gold_star_schema.ipynb
-├── dashboard/
-│   ├── app.py
-│   └── requirements.txt
+│   ├── 04_gold_star_schema.ipynb
+│   └── 05_gold_sensor_health.ipynb
 └── sql/
-    └── catalog_schema_creation.sql
-```
-
-## Local Development
-```bash
-# Clone repository
-git clone https://github.com/aegnor8/databricks-airquality-canada.git
-cd databricks-airquality-canada
-
-# Setup dashboard
-cd dashboard
-python -m venv venv
-venv\Scripts\activate  # Windows
-pip install -r requirements.txt
-
-# Configure secrets
-mkdir .streamlit
-echo 'DATABRICKS_HOST = "your-host"' > .streamlit/secrets.toml
-echo 'DATABRICKS_HTTP_PATH = "your-path"' >> .streamlit/secrets.toml
-echo 'DATABRICKS_TOKEN = "your-token"' >> .streamlit/secrets.toml
-
-# Run
-streamlit run app.py
+    └── catalog_and_schema_creation.dbquery.ipynb
 ```
 
 ## Pipeline Schedule
@@ -124,8 +122,8 @@ streamlit run app.py
 | Job | Schedule | Description |
 |-----|----------|-------------|
 | Locations | Daily 00:00 | Station metadata |
-| Measurements | Hourly | Air quality readings → Silver → Gold |
+| Measurements | Hourly | Air quality readings → Silver → Gold → Sensor health |
 
 ## Author
 
-**Mattia Carganico** — [LinkedIn](https://www.linkedin.com/in/mattia-ca/) | [GitHub](https://github.com/aegnor8)
+**Mattia Carganico**: [LinkedIn](https://www.linkedin.com/in/mattia-ca/) | [GitHub](https://github.com/aegnor8)
