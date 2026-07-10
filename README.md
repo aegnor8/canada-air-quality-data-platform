@@ -13,7 +13,7 @@ End-to-end ELT pipeline that ingests air quality data from 480+ Canadian monitor
 - Hourly data ingestion from OpenAQ API
 - Star schema for analytics (fact + dimensions)
 - Incremental loads with MERGE (no duplicates, full history)
-- Sensor health monitoring mart (down detection, flatlines, coverage)
+- Sensor health monitoring mart (down detection, flatlines, coverage, invalid readings)
 - Interactive Looker Studio dashboard powered by the Gold layer
 
 ## Architecture
@@ -86,10 +86,11 @@ Two flat tables, separate from the star schema, dedicated to monitoring the sens
 | `gold.sensor_health` | One row per sensor | Current status, a `needs_maintenance` flag and a human-readable reason: a technician's work list |
 | `gold.sensor_health_daily` | One row per sensor per day | Status history for trend charts (e.g. sensors down over time) |
 
-A sensor is evaluated on three independent signals:
-- **Silence**: hours since the last reading (`STALE` after 24h, `DOWN` after 72h, `NEVER_REPORTED` if no data at all)
+A sensor is evaluated on four independent signals:
+- **Silence**: hours since the last valid reading (`STALE` after 24h, `DOWN` after 72h, `NEVER_REPORTED` if no data at all)
 - **Flatline**: the same value repeated over and over (stuck instrument)
 - **Coverage**: days with at least one reading in the last 7
+- **Garbage**: transmitting, but the readings fail validation (`SENDING_INVALID`); detected by comparing what bronze received with what survived in silver
 
 All time windows are anchored to the newest timestamp in the data (event time), so results depend on the data itself rather than on when the job runs.
 
