@@ -88,7 +88,7 @@ Two flat tables, separate from the star schema, dedicated to monitoring the sens
 
 A sensor is evaluated on four independent signals:
 - **Silence**: hours since the last valid reading (`STALE` after 24h, `DOWN` after 72h, `NEVER_REPORTED` if no data at all)
-- **Flatline**: the same value repeated over and over (stuck instrument)
+- **Flatline**: stuck on the same non-zero value (a constant zero can just be clean air)
 - **Coverage**: days with at least one reading in the last 7
 - **Garbage**: transmitting, but the readings fail validation (`SENDING_INVALID`); detected by comparing what bronze received with what survived in silver
 
