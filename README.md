@@ -122,7 +122,7 @@ All time windows are anchored to the newest timestamp in the data (event time), 
 | Job | Schedule | Description |
 |-----|----------|-------------|
 | Locations | Daily 00:00 | Station metadata |
-| Measurements | Hourly | Air quality readings → Silver → Gold → Sensor health |
+| Measurements | Hourly | Air quality readings → Silver → Gold |
 
 ## Author
 
