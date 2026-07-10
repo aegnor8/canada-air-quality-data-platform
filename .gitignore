@@ -1,11 +1,7 @@
-# Secrets
-dashboard/.streamlit/secrets.toml
-
 # Python
 __pycache__/
 *.pyc
 .env
-dashboard/venv/
 
 # IDE
 .vscode/
